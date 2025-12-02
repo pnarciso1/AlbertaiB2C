@@ -1,0 +1,35 @@
+feat: Comprehensive branding updates and content enhancements
+
+## Brand Rebranding
+- Replace all instances of "Albert.ai" with "ALBERTai" (100+ occurrences)
+- Implement actual logo image (AlbertAI_Tagline_Color_R.png) in header and footer
+- Create square favicon from logo (16px, 32px, 512px sizes)
+- Increase logo size by 25% for better visibility
+
+## Contact Information Updates
+- Update support email to support@goalbertai.com throughout site
+- Add phone number 800-314-0255 to support page
+- Update FAQ section with new contact details
+
+## Content Enhancements
+- Replace video testimonials with family testimonials using actual photos
+- Add team member photos to About page (Dave, Peter, Farzad, Paolo)
+- Update hero video to AAI_FINAL_UNCOMPRESSED.mp4
+
+## Infrastructure
+- Set up Firebase Cloud Storage bucket for large video hosting
+- Update Firestore security rules to allow admin console access
+- Configure favicon for all browsers and devices
+
+## Files Modified
+- Components: Header, Footer, Hero, SocialProof
+- Pages: Support, About, VerifyEmail, RequestScore, Privacy, HowItWorks, AgingInPlaceScore, Pricing, Resources, Home, ArticlePage
+- Cloud Functions: Email templates and functions
+- Configuration: index.html, firestore.rules, robots.txt
+
+## New Assets
+- Team photos: Dave-3.jpg, Peter_Umekubo Photo 082925.jpg, Farzad.jpg, paolo.png
+- Testimonial photos: Sarah Johnson.jpg, Michael Chen.jpg, Lisa Rodrigues.jpg
+- Favicon files: favicon-16.png, favicon-32.png, favicon.png, favicon-512.png
+
+Note: Video upload to Cloud Storage in progress (1.7GB file)

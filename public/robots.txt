@@ -1,0 +1,11 @@
+# robots.txt for ALBERTai Consumer Website
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://albertai-dev.web.app/sitemap.xml
+
+# Disallow admin or private areas (if any)
+# Disallow: /admin/
+# Disallow: /private/

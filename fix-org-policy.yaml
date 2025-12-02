@@ -1,0 +1,6 @@
+constraint: constraints/iam.allowedPolicyMemberDomains
+listPolicy:
+  allowedValues:
+    - C02vma27x  # Your existing domain
+    - allUsers    # Allow public access for Cloud Functions
+
