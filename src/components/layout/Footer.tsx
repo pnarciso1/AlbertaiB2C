@@ -1,8 +1,15 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Shield, Mail, Phone, Facebook, Twitter, Linkedin } from 'lucide-react'
+import { Shield, Mail, Phone, Facebook, Twitter, Linkedin, CheckCircle2 } from 'lucide-react'
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore'
+import { db } from '@/config/firebase'
 
 function Footer() {
   const currentYear = new Date().getFullYear()
+  const [email, setEmail] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState('')
 
   const footerLinks = {
     company: [
@@ -29,6 +36,57 @@ function Footer() {
       { name: 'HIPAA Compliance', href: '/hipaa' },
       { name: 'Cookie Policy', href: '/cookies' },
     ],
+  }
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setIsSuccess(false)
+    
+    // Validation
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address')
+      return
+    }
+
+    const trimmedEmail = email.trim().toLowerCase()
+    setIsSubmitting(true)
+
+    try {
+      // Check if email already exists
+      const existingQuery = query(
+        collection(db, 'newsletterSubscriptions'),
+        where('email', '==', trimmedEmail),
+        where('status', '==', 'active')
+      )
+      const existingDocs = await getDocs(existingQuery)
+      
+      if (!existingDocs.empty) {
+        setError('This email is already subscribed')
+        setIsSubmitting(false)
+        return
+      }
+
+      // Save to Firestore
+      await addDoc(collection(db, 'newsletterSubscriptions'), {
+        email: trimmedEmail,
+        subscribedAt: serverTimestamp(),
+        status: 'active',
+        source: 'footer'
+      })
+
+      setIsSuccess(true)
+      setEmail('')
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setIsSuccess(false)
+      }, 5000)
+    } catch (err) {
+      console.error('Error subscribing to newsletter:', err)
+      setError('Something went wrong. Please try again or contact support@goalbert.ai')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -146,17 +204,50 @@ function Footer() {
                 Get the latest insights on aging in place and caregiving.
               </p>
             </div>
-            <div className="flex w-full md:w-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 md:w-64 px-4 py-2 bg-gray-800 border border-gray-700 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-              <button className="px-6 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-r-lg transition-colors">
-                Subscribe
+            <form onSubmit={handleNewsletterSubmit} className="flex w-full md:w-auto flex-col md:flex-row gap-2">
+              <div className="flex-1 md:flex-initial">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full md:w-64 px-4 py-2 bg-gray-800 border border-gray-700 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed text-white placeholder-gray-400"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmitting || isSuccess}
+                className="px-6 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="animate-spin">⏳</span>
+                    <span>Submitting...</span>
+                  </>
+                ) : isSuccess ? (
+                  <>
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>Subscribed!</span>
+                  </>
+                ) : (
+                  'Subscribe'
+                )}
               </button>
-            </div>
+            </form>
           </div>
+          {error && (
+            <div className="mt-3 text-sm text-red-400 text-center md:text-left">
+              {error}
+            </div>
+          )}
+          {isSuccess && (
+            <div className="mt-3 text-sm text-green-400 text-center md:text-left flex items-center gap-2 justify-center md:justify-start">
+              <CheckCircle2 className="h-4 w-4" />
+              <span>Thank you for subscribing! Check your email for a welcome message.</span>
+            </div>
+          )}
         </div>
 
         {/* Bottom Bar */}
@@ -171,11 +262,11 @@ function Footer() {
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-400">
               <Mail className="h-4 w-4" />
-              <span>support@albert.ai</span>
+              <span>support@goalbert.ai</span>
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-400">
               <Phone className="h-4 w-4" />
-              <span>1-800-ALBERT-AI</span>
+              <span>800-314-0255</span>
             </div>
           </div>
         </div>

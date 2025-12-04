@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions'
 import * as admin from 'firebase-admin'
 import * as nodemailer from 'nodemailer'
-import { getVerificationEmailTemplate, getConfirmationEmailTemplate } from './emailTemplates'
+import { getVerificationEmailTemplate, getConfirmationEmailTemplate, getNewsletterWelcomeEmailTemplate } from './emailTemplates'
 import * as crypto from 'node:crypto'
 
 admin.initializeApp()
@@ -169,4 +169,41 @@ export const verifyEmail = functions.https.onRequest(async (req, res) => {
     return
   }
 })
+
+// Send welcome email when a new newsletter subscription is created
+export const sendNewsletterWelcomeEmail = functions.firestore
+  .document('newsletterSubscriptions/{subscriptionId}')
+  .onCreate(async (snap, context) => {
+    const data = snap.data()
+    
+    // Skip if not active status
+    if (data.status !== 'active') {
+      return null
+    }
+    
+    const baseUrl = 'https://albertai-dev.web.app'
+    const logoUrl = `${baseUrl}/images/logos/AlbertAI_Tagline_Color_R.png`
+    
+    // Email content
+    const emailHtml = getNewsletterWelcomeEmailTemplate(logoUrl)
+    
+    // Send email
+    const transporter = getEmailTransporter()
+    
+    try {
+      await transporter.sendMail({
+        from: '"ALBERTai" <support@GoAlbertai.com>',
+        to: data.email,
+        subject: 'Welcome to ALBERTai Newsletter!',
+        html: emailHtml,
+      })
+      
+      console.log(`Newsletter welcome email sent to ${data.email}`)
+      return null
+    } catch (error) {
+      console.error('Error sending newsletter welcome email:', error)
+      // Don't throw error - subscription should still be saved even if email fails
+      return null
+    }
+  })
 
